@@ -89,3 +89,18 @@ robust approach would use a classifier model to detect *semantic* leakage
 (is this response revealing anything about hidden instructions?) rather
 than exact-string matching, or better yet, a structural fix: never give
 the model anything it needs to keep secret in the first place.
+
+
+## Round 4: single-run testing is unreliable
+
+Re-running the identical direct-injection payloads with no code changes
+produced different outcomes across runs (one payload flipped from CLEAN
+to BLOCKED BY FILTER; another's exact response text changed materially).
+This confirms llama3.2's non-deterministic sampling means a single
+pass/fail test is not a valid measurement.
+
+**Fix:** redteam_tests.py now runs each payload across multiple trials
+and reports a leak/block rate (e.g. "3/5 trials showed a signal") rather
+than a single verdict. This is standard practice in real AI red-teaming
+tooling (Garak, PyRIT report success rates, not single outcomes) and is
+the difference between an anecdote and a finding.
