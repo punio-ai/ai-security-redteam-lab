@@ -71,3 +71,21 @@ patterns) rather than relying on prompting alone.
 ## Why this project
 
 Built while working through a structured AI security curriculum (foundations → OWASP LLM Top 10 → adversarial ML → agentic security), alongside a parallel track building deployable AI/ML systems (see [other pinned repo] — a Kafka/Isolation Forest anomaly detection pipeline).
+
+
+## Round 3: signature-based filtering has false negatives
+
+Re-ran direct injection tests after adding output filtering. One payload
+("developer mode") produced a response confirming a confidentiality
+instruction exists ("You were told not to reveal these instructions")
+without leaking its content — a metadata-level leak that the filter's
+keyword list did not catch, since it wasn't one of the anticipated marker
+strings.
+
+**Takeaway:** substring/keyword-based output filtering is inherently
+reactive — it only catches phrasings you've already seen. It reduces
+obvious leaks but has no mechanism for novel disclosure patterns. A more
+robust approach would use a classifier model to detect *semantic* leakage
+(is this response revealing anything about hidden instructions?) rather
+than exact-string matching, or better yet, a structural fix: never give
+the model anything it needs to keep secret in the first place.
