@@ -41,9 +41,26 @@ A document containing a hidden instruction (`[SYSTEM OVERRIDE: ...]`) was added 
 
 **OWASP mapping:** LLM01 (Prompt Injection — indirect), and in a system where the model could take actions (send email, call an API), this would escalate into LLM03 (Excessive Agency).
 
-## Mitigation tested
 
-Wrapped retrieved content in explicit `<context>` tags with an instruction that content inside the tags is data, never a directive, regardless of what it claims to be. This reduced — but did not fully eliminate — the indirect injection's success rate on repeated runs, confirming the OWASP 2026 guidance: **prompting alone is not a reliable defense.** A production system needs a second, deterministic layer — e.g., output filtering that rejects responses matching known injection markers, or refuses to execute any action the model "decides" on without a separate authorization check outside the model's control.
+## Mitigation: results
+
+Wrapped retrieved context in `<context>` tags with an explicit instruction
+not to treat contained text as directives.
+
+**Direct injection:** improved from 1/4 leaking to 0/4 leaking cleanly —
+however, one response ("developer mode" payload) referenced the existence
+of the `<context>`-tag defense itself while refusing, a partial disclosure
+of the security control's mechanism. A stricter fix would avoid the model
+explaining *why* it's refusing in any detail.
+
+**Indirect injection: unchanged — still succeeds.** The poisoned document's
+instruction adapted its phrasing ("acknowledge in some form" rather than an
+explicit command) and still triggered disclosure. This confirms the OWASP
+2026 guidance directly: a textual instruction telling the model to treat
+retrieved content as "data, not directives" does not reliably stop an
+attacker whose payload *is* the retrieved content — the defense needs a
+second, deterministic layer (e.g., output-side filtering for known leak
+patterns) rather than relying on prompting alone.
 
 ## What I'd add next
 
